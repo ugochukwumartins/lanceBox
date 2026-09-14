@@ -1,3 +1,6 @@
+// Exercises creating, previewing and editing an invoice on a narrow phone.
+// Tests follow setup → action → expected result. expect(...) checks the result.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,11 +12,15 @@ void main() {
   testWidgets('create, preview and edit an invoice at narrow phone width', (
     tester,
   ) async {
+    // Set a predictable phone size for layout and scrolling checks.
     tester.view.physicalSize = const Size(320, 740);
     tester.view.devicePixelRatio = 1;
+    // Restore the test display settings afterwards so other tests remain independent.
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    // Use in-memory preferences so this test cannot change real device data.
     SharedPreferences.setMockInitialValues({'onboarded': true});
+    // Create isolated Riverpod state with the test’s storage dependency.
     final container = ProviderContainer(
       overrides: [
         preferencesProvider.overrideWithValue(
@@ -21,7 +28,9 @@ void main() {
         ),
       ],
     );
+    // Release this test’s Riverpod state, even if an assertion fails.
     addTearDown(container.dispose);
+    // Build the screen inside the test environment.
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -29,12 +38,15 @@ void main() {
       ),
     );
     await tester.tap(find.text('Create New Invoice'));
+    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
+    // Locate a field by label, scroll to it and enter the supplied test value.
     Future<void> fill(String label, String value) async {
       if (label == 'VAT (%)' || label == 'Shipping') {
         final target = find.byKey(
           ValueKey('summary-${label == 'VAT (%)' ? 'VAT' : label}'),
         );
+        // Scroll until the target control is built and visible before interacting with it.
         await tester.scrollUntilVisible(
           target,
           180,
@@ -48,6 +60,7 @@ void main() {
         (w) => w is TextFormField && w.controller != null,
       );
       final labelFinder = find.text(label).first;
+      // Scroll until the target control is built and visible before interacting with it.
       await tester.scrollUntilVisible(
         labelFinder,
         180,
@@ -78,6 +91,7 @@ void main() {
       isNotNull,
     );
     await fill('VAT (%)', '101');
+    // Scroll until the target control is built and visible before interacting with it.
     await tester.scrollUntilVisible(
       find.text('Next'),
       100,
@@ -93,9 +107,12 @@ void main() {
     await fill('Shipping', '500');
     await tester.ensureVisible(find.text('Next'));
     await tester.tap(find.text('Next'));
+    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
+    // Try more than ten digits to check that the input formatter limits the value.
     await fill('Bank Number', '012345678901');
     expect(find.text('0123456789'), findsOneWidget);
+    // Check the error shown when a bank name contains numbers.
     await fill('Name of Bank', 'Lance123');
     expect(
       find.text('Bank name cannot contain numbers or special symbols'),
@@ -107,23 +124,30 @@ void main() {
     await fill('Terms of Payment', 'Due on receipt');
     await tester.ensureVisible(find.text('Preview Invoice'));
     await tester.tap(find.text('Preview Invoice'));
+    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.text('Preview'), findsOneWidget);
+    // Return from preview and verify that customer and bank values are retained.
     await tester.tap(find.text('Edit Invoice'));
+    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.text('Peter Abu'), findsOneWidget);
+    // Scroll until the target control is built and visible before interacting with it.
     await tester.scrollUntilVisible(
       find.text('Next'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(find.text('Next'));
+    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.text('Lance Bank'), findsOneWidget);
     await tester.ensureVisible(find.text('Preview Invoice'));
     await tester.tap(find.text('Preview Invoice'));
+    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.text('Preview'), findsOneWidget);
+    // Fail if Flutter reported an unexpected error, including a layout overflow.
     expect(tester.takeException(), isNull);
   });
 }

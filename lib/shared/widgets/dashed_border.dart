@@ -23,6 +23,7 @@ class DashedRectangleBorder extends OutlinedBorder {
   Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
       Path()..addRect(rect.deflate(side.width));
 
+  // Draw this custom graphic inside the area provided by Flutter.
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
     if (side.style == BorderStyle.none || rect.isEmpty) return;

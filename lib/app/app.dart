@@ -9,6 +9,7 @@ import 'store.dart';
 
 class LanceBoxApp extends ConsumerWidget {
   const LanceBoxApp({super.key});
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
     debugShowCheckedModeBanner: false,

@@ -13,6 +13,7 @@ class ActionButton extends StatelessWidget {
     this.busy = false,
     this.outlined = false,
   });
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) {
     final child = busy

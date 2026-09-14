@@ -27,6 +27,7 @@ class _SignupFooterState extends State<SignupFooter> {
     super.dispose();
   }
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),

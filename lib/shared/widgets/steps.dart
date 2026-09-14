@@ -15,6 +15,7 @@ class Steps extends StatelessWidget {
       'Download\ninvoice/Send\n to client',
     ],
   });
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 24),

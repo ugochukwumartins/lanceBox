@@ -16,6 +16,7 @@ class SuccessDialog extends StatelessWidget {
   final String message;
   final String buttonLabel;
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Dialog(
     backgroundColor: Colors.white,

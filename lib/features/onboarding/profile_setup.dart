@@ -24,6 +24,7 @@ class ProfileSetup extends StatelessWidget {
     required this.onSkip,
   });
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => PageBody(
     key: const ValueKey(true),
@@ -55,9 +56,9 @@ class ProfileSetup extends StatelessWidget {
                 height: 28,
                 excludeFromSemantics: true,
               )
-            else ...[
+            else 
               const Icon(Icons.check_circle, color: Colors.green, size: 48),
-            ],
+            
             const SizedBox(height: 8),
             Text(
               !hasLogo ? 'Drag or select a file' : 'Upload successful',
@@ -115,7 +116,8 @@ class ProfileSetup extends StatelessWidget {
       ActionButton(
         'Proceed',
         busy: busy,
-        onPressed: accountType.isEmpty ? null : onProceed,
+        // Require an uploaded logo and an account type before proceeding.
+        onPressed: !hasLogo || accountType.isEmpty ? null : onProceed,
       ),
       const SizedBox(height: 8),
       TextButton(

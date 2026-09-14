@@ -93,6 +93,7 @@ class _OnboardingState extends ConsumerState<Onboarding> {
     }
   }
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Scaffold(body: buildCurrentStage());
 

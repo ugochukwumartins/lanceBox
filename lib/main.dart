@@ -9,17 +9,18 @@ import 'shared/ui.dart';
 
 // Start with the storage-loading screen before showing the app.
 void main() {
-  runApp(const Bootstrap());
+  runApp(const MobileAppStartup());
 }
 
-class Bootstrap extends StatefulWidget {
-  const Bootstrap({super.key});
+class MobileAppStartup extends StatefulWidget {
+  const MobileAppStartup({super.key});
   @override
-  State<Bootstrap> createState() => _BootstrapState();
+  State<MobileAppStartup> createState() => _MobileAppStartupState();
 }
 
-class _BootstrapState extends State<Bootstrap> {
+class _MobileAppStartupState extends State<MobileAppStartup> {
   late Future<SharedPreferences> loading = SharedPreferences.getInstance();
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => FutureBuilder<SharedPreferences>(
     future: loading,

@@ -13,8 +13,9 @@ class InvoiceDocument extends StatelessWidget {
 
   String get currencyLabel =>
       invoice.currency == 'NGN' ? 'N' : invoice.currency;
-  String amount(int value) => money(value, '').trim();
+  String amount(num value) => money(value, '').trim();
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Container(
     constraints: const BoxConstraints(minHeight: 486),

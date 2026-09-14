@@ -67,6 +67,20 @@ class _InvoicePreviewState extends ConsumerState<InvoicePreview> {
           bytes: bytes,
         );
         if (path == null && !kIsWeb) return;
+        if (!mounted) return;
+        // A downloaded invoice belongs in dashboard history. Saving by ID also
+        // updates an existing invoice without duplicating repeated downloads.
+        try {
+          await ref.read(appStoreProvider.notifier).save(invoice);
+        } catch (_) {
+          if (mounted) {
+            showError(
+              context,
+              'PDF exported, but the invoice could not be saved to your dashboard. Please try again.',
+            );
+          }
+          return;
+        }
         if (mounted) {
           await notice(
             context,
@@ -76,6 +90,16 @@ class _InvoicePreviewState extends ConsumerState<InvoicePreview> {
                 : 'Your invoice was downloaded successfully.',
             success: true,
           );
+          if (!mounted) return;
+          // Unlock Back before returning the saved result to the editor.
+          // The editor closes itself on true, revealing the dashboard.
+          setState(() {
+            exportAction = null;
+            preparingExport = false;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) Navigator.pop(context, true);
+          });
         }
       }
     } catch (_) {
@@ -139,6 +163,7 @@ class _InvoicePreviewState extends ConsumerState<InvoicePreview> {
     }
   }
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !busy,

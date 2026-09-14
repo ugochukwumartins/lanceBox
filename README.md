@@ -40,7 +40,7 @@ flutter run -d <device-id>
 
 Android uses Java 17, AGP 8.12.1 and the supplied Gradle wrapper. iOS builds need Xcode and signing/device setup. macOS file-picker entitlements are included. To produce an Android debug build, run `flutter build apk --debug`.
 
-Onboarding is a local demonstration, not authentication. Use a valid email-shaped value and any matching password of at least eight characters; no credentials are transmitted or persisted. Profile setup is optional. Invoices remain on this device after logging out. This is one local workspace, not separate user accounts.
+Onboarding is a local demonstration, not authentication. Use a valid email-shaped value and any matching password of at least eight characters including a symbol; no credentials are transmitted or persisted. Profile setup is optional. Invoices remain on this device after logging out. This is one local workspace, not separate user accounts.
 
 ## Testing
 
@@ -69,7 +69,7 @@ Run the checks above after making changes. Android APK: `build/app/outputs/flutt
 
 - Personal Details was not supplied. As agreed, Proceed/Skip goes directly to Dashboard; greeting is generic.
 - Logo is optional. Proceed requires an account-type choice.
-- All invoice/bank text fields are required. Bank numbers accept 1–10 digits (the requested maximum, not a banking verification rule); bank names reject digits and unsupported symbols. Names are capped at 100 characters, titles at 150, descriptions at 300, and payment terms at 500. Invoice identifiers allow up to 30 letters/digits with hyphens and slashes. Email and 8–128-character passwords are validated; confirmation must match. VAT and shipping are optional and default to zero when empty. Quantity must be positive; price may be zero. VAT is 0–100%. Numeric fields accept plain numbers with up to two decimal places and are capped at one billion. Exponents and nonfinite values are rejected.
+- All invoice/bank text fields are required. Bank numbers accept 1–10 digits (the requested maximum, not a banking verification rule); bank names reject digits and unsupported symbols. Names are capped at 100 characters, titles at 150, descriptions at 300, and payment terms at 500. Invoice identifiers allow up to 30 letters/digits with hyphens and slashes. Email and 8–128-character passwords containing at least one symbol are validated; confirmation must match. VAT and shipping are optional and default to zero when empty. Quantity must be positive; price may be zero. VAT is 0–100%. Numeric fields accept plain numbers with up to two decimal places and are capped at one billion. Exponents and nonfinite values are rejected.
 - Currency options are NGN/USD/GBP/EUR; no exchange-rate conversion occurs. Dates default to today.
 - The sample preview totals are inconsistent. The app computes actual totals instead of reproducing those values.
 - Saved-history layout is a simple extension of the supplied empty dashboard.

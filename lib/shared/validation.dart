@@ -56,11 +56,15 @@ String? emailError(String? value) {
   return null;
 }
 
-// Require 8–128 characters and reject whitespace-only passwords.
+// Require 8–128 characters and at least one punctuation mark or symbol.
 String? passwordError(String? value) {
   if ((value?.length ?? 0) < 8) return 'Use at least 8 characters';
   if (value!.length > 128) return 'Use 128 characters or fewer';
   if (value.trim().isEmpty) return 'Password cannot contain only spaces';
+  // Spaces, letters and digits do not count as symbols.
+  if (!RegExp(r'[\p{P}\p{S}]', unicode: true).hasMatch(value)) {
+    return 'Include at least one symbol, such as @, # or !';
+  }
   return null;
 }
 

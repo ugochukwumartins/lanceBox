@@ -21,6 +21,7 @@ class InvoiceItemEditor extends StatelessWidget {
     required this.onRemove,
   });
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Container(
     margin: const EdgeInsets.only(bottom: 16),

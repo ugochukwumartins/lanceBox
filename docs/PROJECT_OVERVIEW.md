@@ -1,15 +1,27 @@
-# LanceBox — brief project documentation
+# LanceBox — Project Documentation
 
-**Purpose.** LanceBox is a Flutter mobile invoicing demo based on the supplied case study and designs. Customers complete or skip profile setup, enter invoice and bank details, preview their invoice, and download or share a PDF.
+**Application Overview**
 
-**User journey.** Sign up → loading screen → profile setup → dashboard → invoice details → bank details → preview. Required fields show validation errors, and navigation buttons become available when inputs are valid. Draft values remain available when returning from preview to edit.
+LanceBox is a Flutter mobile application for invoice preparation and export. It supports profile configuration, itemized billing, tax and shipping calculations, invoice preview, PDF generation and sharing through installed applications.
 
-**Where the code lives.** `lib/main.dart` opens device storage and starts the app. `lib/app/` contains the theme and shared data. `lib/features/onboarding/` handles sign-up and profile setup. `lib/features/invoices/` contains the dashboard, editor, calculations, preview and PDF generation. `lib/shared/` contains reusable controls, colors, dialogs and validation rules. File-opening comments explain each file’s role; comments beside methods explain actions and important decisions.
+**Functional Scope**
 
-**State management.** Riverpod’s `appStoreProvider` owns the shared profile and saved invoices. `ref.watch` reads data and refreshes the screen when it changes; `ref.read(...notifier)` requests actions such as saving. Storage writes finish before a new state snapshot is published. Temporary form values, focus and loading flags stay local to their screen. Controllers are disposed when no longer needed.
+The application provides an onboarding interface with input validation, optional business logo upload and account type selection. The dashboard provides access to invoice creation and stored invoice records. The invoice editor captures customer information, line items, currency, issuance date, bank details and payment terms. Users can review and revise invoice details before exporting the document.
 
-**Calculations and validation.** Item total = quantity × unit price; subtotal adds item totals; final total adds VAT and shipping. Money is stored in minor units (100 means 1.00). Bank numbers retain leading zeros and accept at most ten digits. Bank names reject numbers. Quantity must be positive; prices and shipping may be zero; VAT is limited to 0–100%.
+**Architecture and State Management**
 
-**Run and check.** Install Flutter and configure an Android/iOS device or simulator. Run `flutter pub get`, then `flutter run -d <device-id>`. Check changes with `dart format .`, `flutter analyze` and `flutter test`. Tests cover calculations, validation, storage, PDF output, key user flows and visual baselines.
+The codebase is organized by feature. `lib/app/` contains application configuration, theming and shared state; `lib/features/` contains onboarding and invoicing; `lib/shared/` contains reusable interface components and validation rules.
 
-**Current boundaries.** Authentication and social sign-in are demonstrations. Email uses the device share menu; delivery is not confirmed. Invoice saving exists in the store, but the current preview has no visible Save button. Native file picking and sharing require device verification. See `README.md` for setup details and `docs/CODE_GUIDE.md` for the fuller file map.
+Riverpod manages shared profile and invoice data. SharedPreferences provides local persistence, with state updates published after successful storage operations. Draft input and temporary interface state remain within their respective screens. Separate components handle form data, invoice calculations, document layout and PDF generation.
+
+**Validation and Reliability**
+
+Required fields are validated before progression. Bank numbers accept up to ten digits and preserve leading zeros; bank names reject numeric input. Quantities must be positive, charges non-negative and VAT within 0–100%. Monetary amounts use integer minor units. Invoice totals combine line-item amounts, VAT and shipping. Storage and export failures display actionable messages, while loading indicators communicate pending operations.
+
+**Setup and Verification**
+
+With Flutter installed and a mobile device or simulator configured, run `flutter pub get` followed by `flutter run -d <device-id>`. Quality checks use `dart format .`, `flutter analyze` and `flutter test`. Automated coverage includes calculations, validation, persistence, PDF generation, navigation and visual regression checks.
+
+**Implementation Status**
+
+Backend authentication and social sign-in are not connected. Sharing uses the operating system’s share interface. Invoice persistence is implemented; the preview currently has no visible Save action. Native file selection and sharing require device verification. Further setup and architectural details are available in `README.md` and `docs/CODE_GUIDE.md`.

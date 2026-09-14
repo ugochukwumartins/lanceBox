@@ -4,7 +4,7 @@
 class InvoiceItem {
   final String description;
   final double quantity;
-  final int unitPrice;
+  final num unitPrice;
   const InvoiceItem({
     required this.description,
     required this.quantity,
@@ -21,7 +21,7 @@ class InvoiceItem {
   factory InvoiceItem.fromJson(Map<String, dynamic> j) => InvoiceItem(
     description: j['description'] as String,
     quantity: (j['quantity'] as num).toDouble(),
-    unitPrice: j['unitPrice'] as int,
+    unitPrice: j['unitPrice'] as num,
   );
 }
 
@@ -58,7 +58,14 @@ class Invoice {
     required this.terms,
   }) : items = List.unmodifiable(items);
   // Add the rounded totals of all invoice lines.
-  int get subtotal => items.fold(0, (sum, item) => sum + item.total);
+  int get subtotal {
+    var amount = 0;
+    for (final item in items) {
+      amount += item.total;
+    }
+    return amount;
+  }
+
   // Apply the VAT percentage to the subtotal and round to a minor unit.
   int get tax => (subtotal * vat / 100).round();
   // The final amount includes the subtotal, tax and shipping.
@@ -102,7 +109,7 @@ class Invoice {
 }
 
 // Convert minor units to a readable amount with grouping and two decimal places.
-String money(int minor, [String currency = 'NGN']) {
+String money(num minor, [String currency = 'NGN']) {
   final parts = (minor / 100).toStringAsFixed(2).split('.');
   final whole = parts[0].replaceAllMapped(
     RegExp(r'(\d)(?=(\d{3})+(?!\d))'),

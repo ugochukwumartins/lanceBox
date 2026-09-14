@@ -52,7 +52,9 @@ class InvoiceFormData {
       bankName.text = invoice.bankName;
       accountName.text = invoice.accountName;
       terms.text = invoice.terms;
-      items.addAll(invoice.items.map((item) => InvoiceItemInputs(item)));
+      for (final item in invoice.items) {
+        items.add(InvoiceItemInputs(item));
+      }
     } else {
       items.add(InvoiceItemInputs());
     }
@@ -113,26 +115,30 @@ class InvoiceFormData {
     terms: terms.text.trim(),
   );
   // Enable Next only when every required invoice value passes the same field rules.
-  bool get hasValidInvoiceDetails =>
-      invoiceNumberError(number.text) == null &&
-      nameError(client.text) == null &&
-      nameError(sender.text) == null &&
-      titleError(title.text) == null &&
-      items.isNotEmpty &&
-      items.every(
-        (item) =>
-            descriptionError(item.description.text) == null &&
-            positiveNumber(item.quantity.text) == null &&
-            nonNegativeNumber(item.price.text) == null,
-      ) &&
-      shippingError(shipping.text) == null &&
-      vatError(vat.text) == null;
-  // Enable Preview only when the payment details pass validation.
-  bool get hasValidBankDetails =>
-      bankNumberError(bankNumber.text) == null &&
-      bankNameError(bankName.text) == null &&
-      nameError(accountName.text) == null &&
-      termsError(terms.text) == null;
+  bool get hasValidInvoiceDetails {
+    if (invoiceNumberError(number.text) != null) return false;
+    if (nameError(client.text) != null) return false;
+    if (nameError(sender.text) != null) return false;
+    if (titleError(title.text) != null) return false;
+    if (shippingError(shipping.text) != null) return false;
+    if (vatError(vat.text) != null) return false;
+    if (items.isEmpty) return false;
+
+    // Every line must be complete before the user can continue.
+    for (final item in items) {
+      if (!item.isValid) return false;
+    }
+    return true;
+  }
+
+  // Check each payment field separately so the rules are easy to follow.
+  bool get hasValidBankDetails {
+    if (bankNumberError(bankNumber.text) != null) return false;
+    if (bankNameError(bankName.text) != null) return false;
+    if (nameError(accountName.text) != null) return false;
+    if (termsError(terms.text) != null) return false;
+    return true;
+  }
 }
 
 /// The three editable values in one invoice line.
@@ -147,6 +153,14 @@ class InvoiceItemInputs {
       price.text = (item.unitPrice / 100).toStringAsFixed(2);
     }
   }
+  // A line needs a description, positive quantity and a non-negative price.
+  bool get isValid {
+    if (descriptionError(description.text) != null) return false;
+    if (positiveNumber(quantity.text) != null) return false;
+    if (nonNegativeNumber(price.text) != null) return false;
+    return true;
+  }
+
   // Notify the editor whenever one of these text values changes.
   void addListeners(VoidCallback callback) {
     description.addListener(callback);

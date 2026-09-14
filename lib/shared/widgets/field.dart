@@ -42,6 +42,7 @@ class _FieldState extends State<Field> {
     super.dispose();
   }
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 18),

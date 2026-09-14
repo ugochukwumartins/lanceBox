@@ -1,23 +1,23 @@
-// Draws the LanceBox brand and the full-screen loading indicator.
+// Displays the supplied LanceBox SVG and the full-screen loading indicator.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../colors.dart';
 
 class Brand extends StatelessWidget {
   final bool wordmark;
   const Brand({super.key, this.wordmark = false});
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Container(
+      // The SVG includes the blue background and the complete logo mark.
+      SvgPicture.asset(
+        'assets/icons/brand.svg',
         width: 40,
         height: 40,
-        decoration: BoxDecoration(
-          color: blue,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: CustomPaint(painter: _Mark()),
+        semanticsLabel: 'LanceBox logo',
       ),
       if (wordmark)
         const Padding(
@@ -40,6 +40,7 @@ class Brand extends StatelessWidget {
 class BrandLoading extends StatelessWidget {
   const BrandLoading({super.key});
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => ColoredBox(
     color: Colors.white,
@@ -62,29 +63,4 @@ class BrandLoading extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _Mark extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Path()
-      ..moveTo(6, 18)
-      ..lineTo(19, 12)
-      ..lineTo(17, 22)
-      ..lineTo(5, 27)
-      ..close();
-    canvas.drawPath(p, Paint()..color = navy);
-    final q = Path()
-      ..moveTo(19, 12)
-      ..lineTo(27, 24)
-      ..lineTo(36, 20)
-      ..lineTo(34, 29)
-      ..lineTo(24, 33)
-      ..lineTo(17, 22)
-      ..close();
-    canvas.drawPath(q, Paint()..color = Colors.white);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

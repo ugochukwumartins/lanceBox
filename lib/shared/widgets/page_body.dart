@@ -10,6 +10,7 @@ class PageBody extends StatelessWidget {
     required this.children,
     this.padding = const EdgeInsets.all(24),
   });
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => SafeArea(
     child: Center(

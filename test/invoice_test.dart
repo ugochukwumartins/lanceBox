@@ -1,3 +1,6 @@
+// Checks invoice calculations, data storage, editing and PDF generation without navigating screens.
+// Tests follow setup → action → expected result. expect(...) checks the result.
+
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +9,7 @@ import 'package:lancebox/app/store.dart';
 import 'package:lancebox/features/invoices/invoice.dart';
 import 'package:lancebox/features/invoices/export.dart';
 
+// Build repeatable example data; changing the title retains the same invoice ID.
 Invoice sample({String title = 'Design'}) => Invoice(
   id: '1',
   number: '0001',
@@ -26,9 +30,30 @@ Invoice sample({String title = 'Design'}) => Invoice(
   terms: 'Due on receipt',
 );
 void main() {
+  test(
+    'unit prices accept integers and decimals through JSON and formatting',
+    () {
+      for (final price in <num>[10000, 10000.5]) {
+        final item = InvoiceItem(
+          description: 'Service',
+          quantity: 2,
+          unitPrice: price,
+        );
+        final restored = InvoiceItem.fromJson(
+          jsonDecode(jsonEncode(item.toJson())) as Map<String, dynamic>,
+        );
+        expect(restored.unitPrice, price);
+        expect(restored.total, (price * 2).round());
+        expect(money(restored.unitPrice), money(price));
+      }
+      expect(money(10000.0), 'NGN 100.00');
+    },
+  );
+  // Initialize Flutter services so tests can load assets and use mocked plugins.
   TestWidgetsFlutterBinding.ensureInitialized();
   test('fractional quantities, VAT and shipping use rounded minor units', () {
     final invoice = sample();
+    // Check line rounding, subtotal, VAT, final total and formatted display separately.
     expect(invoice.items.last.total, 15002);
     expect(invoice.subtotal, 615002);
     expect(invoice.tax, 46125);
@@ -43,6 +68,7 @@ void main() {
     expect(nonNegativeNumber('0'), isNull);
   });
   test('invoice round trip preserves account leading zero and totals', () {
+    // Serialize and restore the invoice exactly as local storage does.
     final invoice = Invoice.fromJson(
       jsonDecode(jsonEncode(sample().toJson())) as Map<String, dynamic>,
     );
@@ -50,15 +76,20 @@ void main() {
     expect(invoice.total, sample().total);
   });
   test('saved invoices survive reload and edits do not duplicate', () async {
+    // Use in-memory preferences so this test cannot change real device data.
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
+    // Create isolated Riverpod state with the test’s storage dependency.
     final container = ProviderContainer(
       overrides: [preferencesProvider.overrideWithValue(prefs)],
     );
+    // Release this test’s Riverpod state, even if an assertion fails.
     addTearDown(container.dispose);
     final store = container.read(appStoreProvider.notifier);
     await store.save(sample());
+    // Save the same ID again: it must update the existing record instead of duplicating it.
     await store.save(sample(title: 'Updated'));
+    // Create a fresh store using the same preferences to simulate reopening the app.
     final restored = ProviderContainer(
       overrides: [preferencesProvider.overrideWithValue(prefs)],
     );
@@ -68,7 +99,9 @@ void main() {
     expect(reopened.invoices.single.title, 'Updated');
   });
   test('corrupt saved data is not silently overwritten', () async {
+    // Use in-memory preferences so this test cannot change real device data.
     SharedPreferences.setMockInitialValues({'invoices': 'broken'});
+    // Create isolated Riverpod state with the test’s storage dependency.
     final container = ProviderContainer(
       overrides: [
         preferencesProvider.overrideWithValue(
@@ -76,13 +109,16 @@ void main() {
         ),
       ],
     );
+    // Release this test’s Riverpod state, even if an assertion fails.
     addTearDown(container.dispose);
     final store = container.read(appStoreProvider.notifier);
     expect(container.read(appStoreProvider).loadError, isNotNull);
+    // A save must be refused when existing invoice data could not be read safely.
     await expectLater(store.save(sample()), throwsStateError);
   });
   test('export produces a PDF document', () async {
     final bytes = await invoicePdf(sample(), null);
+    // Check the PDF file signature and a basic size threshold, not its visual appearance.
     expect(ascii.decode(bytes.take(5).toList()), '%PDF-');
     expect(bytes.length, greaterThan(1000));
   });

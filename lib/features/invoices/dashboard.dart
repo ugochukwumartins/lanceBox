@@ -14,6 +14,7 @@ class Dashboard extends ConsumerWidget {
     context,
     MaterialPageRoute<void>(builder: (_) => InvoiceEditor(invoice: invoice)),
   );
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final store = ref.watch(appStoreProvider);
@@ -234,6 +235,7 @@ class _Tile extends StatelessWidget {
   final List<Widget> children;
   final VoidCallback onTap;
   const _Tile({this.dark = false, required this.children, required this.onTap});
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Material(
     color: dark ? navy : const Color(0xffe5eff8),
@@ -263,6 +265,7 @@ class _Tile extends StatelessWidget {
 
 class _EmptyIllustration extends StatelessWidget {
   const _EmptyIllustration();
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Center(
     child: SizedBox(

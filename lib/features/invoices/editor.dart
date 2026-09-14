@@ -25,8 +25,8 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
   final form = GlobalKey<FormState>();
   late final InvoiceFormData formData;
   InvoiceStep step = InvoiceStep.details;
-  bool dirty = false;
-  bool leaving = false;
+  bool hasUnsavedChanges = false;
+  bool canLeaveEditor = false;
 
   @override
   // Create a draft once and listen for edits so totals and buttons update.
@@ -42,7 +42,7 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
 
   // Remember unsaved edits and rebuild the calculated values.
   void markAsChanged() {
-    setState(() => dirty = true);
+    setState(() => hasUnsavedChanges = true);
   }
 
   // Release owned resources when this screen/control is removed.
@@ -71,7 +71,7 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
     item.addListeners(markAsChanged);
     setState(() {
       formData.items.add(item);
-      dirty = true;
+      hasUnsavedChanges = true;
     });
   }
 
@@ -80,14 +80,14 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
     final removedItem = formData.items[index];
     setState(() {
       formData.items.removeAt(index);
-      dirty = true;
+      hasUnsavedChanges = true;
     });
     removedItem.dispose();
   }
 
   // PopScope must rebuild before this screen is allowed to close.
   void leaveEditor() {
-    setState(() => leaving = true);
+    setState(() => canLeaveEditor = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) Navigator.pop(context);
     });
@@ -99,29 +99,42 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
       setState(() => step = InvoiceStep.details);
       return;
     }
-    final discard =
-        !dirty ||
-        await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Discard changes?'),
-                content: const Text('Your unsaved changes will be lost.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Keep editing'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Discard'),
-                  ),
-                ],
-              ),
-            ) ==
-            true;
-    if (discard && mounted) {
+    if (!hasUnsavedChanges) {
       leaveEditor();
+      return;
     }
+    final discard = await confirmDiscardChanges();
+    if (discard && mounted) leaveEditor();
+  }
+
+  // Closing the dialog without choosing Discard keeps the draft open.
+  Future<bool> confirmDiscardChanges() async {
+    final choice = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text('Your unsaved changes will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep editing'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    return choice == true;
+  }
+
+  // Keep button readiness outside the widget layout.
+  bool get canContinue {
+    if (step == InvoiceStep.details) {
+      return formData.hasValidInvoiceDetails;
+    }
+    return formData.hasValidBankDetails;
   }
 
   // Validate the form before advancing; preserve the draft when editing again.
@@ -137,15 +150,19 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
         builder: (_) => InvoicePreview(invoice: formData.toInvoice()),
       ),
     );
-    if (saved == false && mounted) setState(() => step = InvoiceStep.details);
-    if (saved == true && mounted) {
+    if (!mounted) return;
+    // Preview returns false for Edit, true after its save flow, or null for Back.
+    if (saved == false) {
+      setState(() => step = InvoiceStep.details);
+    } else if (saved == true) {
       leaveEditor();
     }
   }
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: leaving,
+    canPop: canLeaveEditor,
     onPopInvokedWithResult: (didPop, result) {
       if (!didPop) close();
     },
@@ -179,12 +196,7 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
           const SizedBox(height: 20),
           ActionButton(
             step == InvoiceStep.details ? 'Next' : 'Preview Invoice',
-            onPressed:
-                (step == InvoiceStep.details
-                    ? formData.hasValidInvoiceDetails
-                    : formData.hasValidBankDetails)
-                ? goToNextStep
-                : null,
+            onPressed: canContinue ? goToNextStep : null,
           ),
           const SizedBox(height: 8),
         ],
@@ -242,7 +254,7 @@ class _InvoiceEditorState extends ConsumerState<InvoiceEditor> {
                     if (v != null) {
                       setState(() {
                         formData.currency = v;
-                        dirty = true;
+                        hasUnsavedChanges = true;
                       });
                     }
                   },

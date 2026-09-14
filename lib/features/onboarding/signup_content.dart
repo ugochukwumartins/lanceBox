@@ -26,6 +26,7 @@ class SignupContent extends StatelessWidget {
     required this.onBack,
   });
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => PageBody(
     key: const ValueKey(false),

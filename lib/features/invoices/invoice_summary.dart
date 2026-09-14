@@ -17,6 +17,7 @@ class InvoiceSummary extends StatelessWidget {
     required this.shippingController,
   });
 
+  // Describe the visible interface using the current values and callbacks.
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
