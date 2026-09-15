@@ -10,9 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lancebox/app/store.dart';
 import 'package:lancebox/features/invoices/editor.dart';
 import 'package:lancebox/features/invoices/dashboard.dart';
-import 'invoice_test.dart' show sample;
+import 'helpers/sample_invoice.dart';
 
 class TestFilePicker extends FilePickerPlatform {
+  // null simulates Cancel; a file URI simulates a successful save.
   Uri? result;
   @override
   Future<Uri?> saveFile({
@@ -32,6 +33,7 @@ void main() {
   testWidgets('download saves history once and cancellation leaves it empty', (
     tester,
   ) async {
+    // SETUP: Isolate app storage and replace the real file-save dialog.
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(
@@ -52,7 +54,7 @@ void main() {
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
       navigator.push(
         MaterialPageRoute<void>(
-          builder: (_) => InvoiceEditor(invoice: sample()),
+          builder: (_) => InvoiceEditor(invoice: sampleInvoice()),
         ),
       );
       await tester.pumpAndSettle();
@@ -83,9 +85,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     }
 
+    // CHECK: Cancelling the save dialog must leave history empty.
     await download();
     expect(container.read(appStoreProvider).invoices, isEmpty);
     picker.result = Uri.file('/tmp/invoice.pdf');
+    // ACT + CHECK: Download twice; each time return home with only one record.
     for (var attempt = 0; attempt < 2; attempt++) {
       await download();
       expect(find.text('Download Successful'), findsOneWidget);

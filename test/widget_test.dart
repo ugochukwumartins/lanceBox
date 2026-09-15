@@ -46,7 +46,6 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(find.text('Sign Up'));
-    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     // Submitting the empty form must show the email validation error.
     expect(find.text('Enter a valid email address'), findsOneWidget);
@@ -61,7 +60,6 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(2), 'different!');
     await tester.ensureVisible(find.text('Sign Up'));
     await tester.tap(find.text('Sign Up'));
-    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.text('Passwords do not match'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).at(2), 'password123!');
@@ -94,7 +92,6 @@ void main() {
     expect(find.byType(BrandLoading), findsOneWidget);
     expect(find.text('Signing Up'), findsNothing);
     await tester.pump(const Duration(seconds: 1));
-    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.byType(BrandLoading), findsNothing);
     expect(find.text('Signing Up'), findsNothing);
@@ -106,7 +103,6 @@ void main() {
     );
     // Skip optional setup and check both navigation and shared completion state.
     await tester.tap(find.text('Skip for now'));
-    // Finish pending frames and finite animations before checking the screen.
     await tester.pumpAndSettle();
     expect(find.byType(Dashboard), findsOneWidget);
     expect(container.read(appStoreProvider).onboarded, isTrue);

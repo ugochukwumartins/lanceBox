@@ -8,27 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lancebox/app/store.dart';
 import 'package:lancebox/features/invoices/invoice.dart';
 import 'package:lancebox/features/invoices/export.dart';
+import 'helpers/sample_invoice.dart';
 
-// Build repeatable example data; changing the title retains the same invoice ID.
-Invoice sample({String title = 'Design'}) => Invoice(
-  id: '1',
-  number: '0001',
-  client: 'Client',
-  sender: 'Sender',
-  title: title,
-  currency: 'NGN',
-  date: DateTime(2026, 9, 11),
-  items: const [
-    InvoiceItem(description: 'Design', quantity: 2, unitPrice: 300000),
-    InvoiceItem(description: 'Support', quantity: 1.5, unitPrice: 10001),
-  ],
-  vat: 7.5,
-  shipping: 50000,
-  bankNumber: '0123456789',
-  bankName: 'Lance Bank',
-  accountName: 'Sender',
-  terms: 'Due on receipt',
-);
 void main() {
   test(
     'unit prices accept integers and decimals through JSON and formatting',
@@ -52,7 +33,7 @@ void main() {
   // Initialize Flutter services so tests can load assets and use mocked plugins.
   TestWidgetsFlutterBinding.ensureInitialized();
   test('fractional quantities, VAT and shipping use rounded minor units', () {
-    final invoice = sample();
+    final invoice = sampleInvoice();
     // Check line rounding, subtotal, VAT, final total and formatted display separately.
     expect(invoice.items.last.total, 15002);
     expect(invoice.subtotal, 615002);
@@ -70,10 +51,10 @@ void main() {
   test('invoice round trip preserves account leading zero and totals', () {
     // Serialize and restore the invoice exactly as local storage does.
     final invoice = Invoice.fromJson(
-      jsonDecode(jsonEncode(sample().toJson())) as Map<String, dynamic>,
+      jsonDecode(jsonEncode(sampleInvoice().toJson())) as Map<String, dynamic>,
     );
     expect(invoice.bankNumber, '0123456789');
-    expect(invoice.total, sample().total);
+    expect(invoice.total, sampleInvoice().total);
   });
   test('saved invoices survive reload and edits do not duplicate', () async {
     // Use in-memory preferences so this test cannot change real device data.
@@ -86,9 +67,9 @@ void main() {
     // Release this test’s Riverpod state, even if an assertion fails.
     addTearDown(container.dispose);
     final store = container.read(appStoreProvider.notifier);
-    await store.save(sample());
+    await store.save(sampleInvoice());
     // Save the same ID again: it must update the existing record instead of duplicating it.
-    await store.save(sample(title: 'Updated'));
+    await store.save(sampleInvoice(title: 'Updated'));
     // Create a fresh store using the same preferences to simulate reopening the app.
     final restored = ProviderContainer(
       overrides: [preferencesProvider.overrideWithValue(prefs)],
@@ -114,10 +95,10 @@ void main() {
     final store = container.read(appStoreProvider.notifier);
     expect(container.read(appStoreProvider).loadError, isNotNull);
     // A save must be refused when existing invoice data could not be read safely.
-    await expectLater(store.save(sample()), throwsStateError);
+    await expectLater(store.save(sampleInvoice()), throwsStateError);
   });
   test('export produces a PDF document', () async {
-    final bytes = await invoicePdf(sample(), null);
+    final bytes = await invoicePdf(sampleInvoice(), null);
     // Check the PDF file signature and a basic size threshold, not its visual appearance.
     expect(ascii.decode(bytes.take(5).toList()), '%PDF-');
     expect(bytes.length, greaterThan(1000));

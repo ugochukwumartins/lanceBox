@@ -42,7 +42,6 @@ void main() {
           child: const RepaintBoundary(key: captureKey, child: LanceBoxApp()),
         ),
       );
-      // Finish pending frames and finite animations before checking the screen.
       await tester.pumpAndSettle();
       // Use fixed data and dates so screenshots do not change from one day to the next.
       final invoice = Invoice(
@@ -77,7 +76,6 @@ void main() {
                 : InvoicePreview(invoice: invoice),
           ),
         );
-        // Finish pending frames and finite animations before checking the screen.
         await tester.pumpAndSettle();
       }
       // Compare pixels with the approved baseline; do not update it to hide a regression.
